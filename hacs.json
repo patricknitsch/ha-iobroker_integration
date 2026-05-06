@@ -1,3 +1,4 @@
 {
-  "name": "ioBroker"
+  "name": "ioBroker",
+  "render_readme": true
 }
