@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ioBroker",
+        "description": "Verbindung zur ioBroker-Instanz herstellen (simple-api Adapter, Standardport 8087).",
+        "data": {
+          "host": "Hostname oder IP-Adresse",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen. Hostname/IP und Port prüfen.",
+      "unknown": "Unbekannter Fehler aufgetreten."
+    },
+    "abort": {
+      "already_configured": "Diese ioBroker-Instanz ist bereits konfiguriert."
+    }
+  }
+}

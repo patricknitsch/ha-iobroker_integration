@@ -1,0 +1,11 @@
+{
+  "domain": "iobroker",
+  "name": "ioBroker",
+  "codeowners": ["@patricknitsch"],
+  "config_flow": true,
+  "documentation": "https://github.com/patricknitsch/ha-iobroker_integration",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "0.1.0"
+}

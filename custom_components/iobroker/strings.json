@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ioBroker",
+        "description": "Connect to your ioBroker instance (simple-api adapter, default port 8087).",
+        "data": {
+          "host": "Hostname or IP address",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Verify the hostname/IP and port.",
+      "unknown": "Unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This ioBroker instance is already configured."
+    }
+  }
+}
