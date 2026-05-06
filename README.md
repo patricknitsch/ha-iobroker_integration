@@ -1,5 +1,7 @@
 # ha-iobroker_integration
 
+<img src="custom_components/iobroker/icon.png" alt="ioBroker Integration" width="80"/>
+
 A Home Assistant custom integration that communicates with ioBroker and automatically discovers all selected ioBroker states as Home Assistant entities.
 
 ## Features
@@ -12,7 +14,9 @@ A Home Assistant custom integration that communicates with ioBroker and automati
   - **Read-only number / string / mixed** → `sensor`
 - UI-based configuration flow (Settings → Integrations → Add Integration → ioBroker)
 - Category selection: choose which ioBroker data groups to import
-- Polling-based state updates (default: every 30 s)
+- **Configurable polling interval** (default: 30 s, minimum: 5 s)
+- Automatic entity cleanup: entities from deselected categories are removed when the configuration is saved
+- Only entities whose state value has actually changed are updated in Home Assistant
 - Device grouping by ioBroker adapter instance
 
 ## Prerequisites
@@ -67,6 +71,12 @@ Choose which ioBroker state categories should be imported as HA entities:
 | Discovery | `discovery.*` | ☐ off | Discovery adapter states |
 | Simple-API | `simple-api.*` | ☐ off | Simple-API adapter internal states |
 | Hass | `hass.*` | ☐ off | Hass adapter states |
+
+| Setting | Default | Description |
+|---|---|---|
+| Polling interval | `30` | How often (in seconds) HA polls ioBroker for state updates (min: 5, max: 3600) |
+
+> **Note:** When you change the category selection and save the options, entities from deselected categories are automatically removed and entities from newly selected categories are automatically imported.
 
 ## Port reference
 
