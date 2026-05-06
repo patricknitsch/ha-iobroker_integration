@@ -57,8 +57,9 @@ class IoBrokerEntity(CoordinatorEntity):
 
         self._attr_device_info = _build_device_info(entry_id, obj_id)
 
-        # Track the last-seen state so we can skip no-op updates.
+        # Track the last-seen state and availability so we can skip no-op updates.
         self._prev_state_data: dict[str, Any] | None = None
+        self._prev_available: bool = False
 
     @property
     def _state_data(self) -> dict[str, Any] | None:
@@ -77,9 +78,11 @@ class IoBrokerEntity(CoordinatorEntity):
         )
 
     def _handle_coordinator_update(self) -> None:
-        """Write HA state only when this entity's ioBroker state actually changed."""
+        """Write HA state only when this entity's value or availability actually changed."""
         new_state = self._state_data
-        if new_state == self._prev_state_data:
+        new_available = self.available
+        if new_state == self._prev_state_data and new_available == self._prev_available:
             return
         self._prev_state_data = new_state
+        self._prev_available = new_available
         self.async_write_ha_state()
