@@ -71,7 +71,7 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     def __init__(self) -> None:
-        """Initialise the config flow."""
+        """Initialize the config flow."""
         self._host: str = ""
         self._port: int = DEFAULT_PORT
 

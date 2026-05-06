@@ -17,7 +17,7 @@ A Home Assistant custom integration that communicates with ioBroker and automati
 
 ## Prerequisites
 
-### 1. Install the simple-api adapter in ioBroker
+### Install the simple-api adapter in ioBroker
 
 This integration communicates exclusively with the **ioBroker simple-api adapter** via HTTP/REST on port **8087** (default).
 
