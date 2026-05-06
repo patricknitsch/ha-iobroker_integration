@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -19,6 +20,7 @@ from .const import (
     CONF_HOST,
     CONF_INCLUDE_DEVICES,
     CONF_PORT,
+    CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     IOBROKER_TYPE_STATE,
@@ -107,6 +109,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     merged_config = {**entry.data, **entry.options}
     state_objects = _filter_by_categories(merged_config, state_objects)
 
+    # Remove entity registry entries for states that are no longer in the filtered set.
+    # This ensures entities from deselected categories are fully cleaned up after a reload.
+    entity_reg = er.async_get(hass)
+    active_unique_ids = {f"{DOMAIN}_{entry.entry_id}_{obj_id}" for obj_id in state_objects}
+    for entity_entry in er.async_entries_for_config_entry(entity_reg, entry.entry_id):
+        if entity_entry.unique_id not in active_unique_ids:
+            entity_reg.async_remove(entity_entry.entity_id)
+
+    scan_interval: int = merged_config.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+
     async def _async_update_data() -> dict[str, Any]:
         """Fetch current state values from ioBroker."""
         try:
@@ -121,7 +133,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=f"ioBroker ({host}:{port})",
         update_method=_async_update_data,
-        update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+        update_interval=timedelta(seconds=scan_interval),
     )
 
     # Perform first refresh

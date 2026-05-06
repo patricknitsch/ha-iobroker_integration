@@ -21,9 +21,13 @@ from .const import (
     CONF_INCLUDE_SYSTEM,
     CONF_INCLUDE_USERDATA,
     CONF_PORT,
+    CONF_SCAN_INTERVAL,
     DEFAULT_HOST,
     DEFAULT_PORT,
+    DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    MAX_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,7 +42,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-def _categories_schema() -> vol.Schema:
+def _categories_schema(scan_interval: int = DEFAULT_SCAN_INTERVAL) -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(
@@ -62,6 +66,9 @@ def _categories_schema() -> vol.Schema:
             vol.Required(
                 CONF_INCLUDE_HASS, default=CATEGORY_DEFAULTS[CONF_INCLUDE_HASS]
             ): bool,
+            vol.Required(CONF_SCAN_INTERVAL, default=scan_interval): vol.All(
+                vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)
+            ),
         }
     )
 
@@ -179,6 +186,8 @@ class IoBrokerOptionsFlowHandler(OptionsFlow):
         def _current(key: str) -> bool:
             return current.get(key, CATEGORY_DEFAULTS[key])
 
+        current_scan_interval: int = current.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
@@ -190,6 +199,9 @@ class IoBrokerOptionsFlowHandler(OptionsFlow):
                     vol.Required(CONF_INCLUDE_DISCOVERY, default=_current(CONF_INCLUDE_DISCOVERY)): bool,
                     vol.Required(CONF_INCLUDE_SIMPLE_API, default=_current(CONF_INCLUDE_SIMPLE_API)): bool,
                     vol.Required(CONF_INCLUDE_HASS, default=_current(CONF_INCLUDE_HASS)): bool,
+                    vol.Required(CONF_SCAN_INTERVAL, default=current_scan_interval): vol.All(
+                        vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)
+                    ),
                 }
             ),
         )

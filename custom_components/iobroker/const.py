@@ -5,9 +5,12 @@ DOMAIN = "iobroker"
 DEFAULT_HOST = "3a1c5d11-iobroker"
 DEFAULT_PORT = 8087
 DEFAULT_SCAN_INTERVAL = 30
+MIN_SCAN_INTERVAL = 5
+MAX_SCAN_INTERVAL = 3600
 
 CONF_HOST = "host"
 CONF_PORT = "port"
+CONF_SCAN_INTERVAL = "scan_interval"
 
 # Category filter config keys
 CONF_INCLUDE_SYSTEM = "include_system"

@@ -19,7 +19,8 @@
           "include_devices": "Geräte (alle anderen Adapter)",
           "include_discovery": "Discovery (discovery.*)",
           "include_simple_api": "Simple-API (simple-api.*)",
-          "include_hass": "Hass (hass.*)"
+          "include_hass": "Hass (hass.*)",
+          "scan_interval": "Abfrageintervall (Sekunden)"
         }
       }
     },
@@ -44,7 +45,8 @@
           "include_devices": "Geräte (alle anderen Adapter)",
           "include_discovery": "Discovery (discovery.*)",
           "include_simple_api": "Simple-API (simple-api.*)",
-          "include_hass": "Hass (hass.*)"
+          "include_hass": "Hass (hass.*)",
+          "scan_interval": "Abfrageintervall (Sekunden)"
         }
       }
     }
