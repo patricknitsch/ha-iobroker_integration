@@ -29,9 +29,10 @@ async def async_setup_entry(
     for obj_id, obj_meta in objects.items():
         common = obj_meta.get("common", {})
         datatype = common.get("type", "")
+        # ioBroker default for common.write is True (writable); only False means read-only
         writable = common.get("write", True)
 
-        # Binary sensor: boolean + NOT writable (read-only)
+        # Binary sensor: boolean + explicitly NOT writable
         if datatype == IOBROKER_DATATYPE_BOOLEAN and not writable:
             entities.append(IoBrokerBinarySensor(coordinator, obj_id, obj_meta))
 

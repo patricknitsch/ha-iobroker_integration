@@ -31,6 +31,7 @@ async def async_setup_entry(
     for obj_id, obj_meta in objects.items():
         common = obj_meta.get("common", {})
         datatype = common.get("type", "")
+        # ioBroker default for common.write is True (writable)
         writable = common.get("write", True)
 
         if datatype == IOBROKER_DATATYPE_BOOLEAN and writable:

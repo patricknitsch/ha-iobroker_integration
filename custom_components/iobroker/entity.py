@@ -21,12 +21,6 @@ def _build_device_info(obj_id: str, obj_meta: dict[str, Any]) -> DeviceInfo:
     device_id = ".".join(parts[:2]) if len(parts) >= 2 else parts[0]
     device_name = device_id
 
-    # Try to get a nicer name from the channel/device object if available
-    common = obj_meta.get("common", {})
-    if isinstance(common.get("name"), str) and common["name"]:
-        # Use the object's name if it looks like an overall device label
-        pass
-
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=device_name,

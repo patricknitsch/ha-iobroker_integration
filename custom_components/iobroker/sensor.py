@@ -37,6 +37,7 @@ async def async_setup_entry(
     for obj_id, obj_meta in objects.items():
         common = obj_meta.get("common", {})
         datatype = common.get("type", "")
+        # ioBroker default for common.write is True (writable); only False means read-only
         writable = common.get("write", True)
 
         if datatype in _READ_ONLY_TYPES and not writable:
