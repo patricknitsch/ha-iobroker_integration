@@ -110,9 +110,9 @@ class IoBrokerApi:
             ) from err
 
     async def async_test_connection(self) -> bool:
-        """Test the connection by hitting /help."""
+        """Test the connection using a JSON-returning endpoint."""
         try:
-            await self._request("/help")
+            await self._request("/states", {"pattern": "*"})
             return True
         except IoBrokerApiError:
             return False
