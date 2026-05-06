@@ -35,8 +35,16 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            host: str = user_input[CONF_HOST]
+            host: str = user_input[CONF_HOST].strip()
             port: int = user_input[CONF_PORT]
+
+            if not host or ".." in host or host.startswith(".") or host.endswith("."):
+                errors[CONF_HOST] = "invalid_host"
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=STEP_USER_DATA_SCHEMA,
+                    errors=errors,
+                )
 
             # Ensure a single entry per host:port
             await self.async_set_unique_id(f"{host}:{port}")
@@ -64,7 +72,7 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
                 else:
                     return self.async_create_entry(
                         title=f"ioBroker ({host}:{port})",
-                        data=user_input,
+                        data={**user_input, CONF_HOST: host},
                     )
 
         return self.async_show_form(

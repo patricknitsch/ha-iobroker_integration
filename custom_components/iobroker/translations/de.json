@@ -12,6 +12,7 @@
     },
     "error": {
       "cannot_connect": "Verbindung fehlgeschlagen. Hostname/IP und Port prüfen.",
+      "invalid_host": "Ungültiger Hostname. Auf aufeinanderfolgende Punkte oder führende/abschließende Punkte prüfen.",
       "unknown": "Unbekannter Fehler aufgetreten."
     },
     "abort": {

@@ -71,6 +71,16 @@ class IoBrokerApi:
             raise IoBrokerConnectionError(
                 f"Timeout connecting to ioBroker at {url}"
             ) from err
+        except UnicodeEncodeError as err:
+            _LOGGER.error(
+                "Invalid hostname in ioBroker URL %s – check for consecutive dots, "
+                "leading or trailing dots: %s",
+                url,
+                err,
+            )
+            raise IoBrokerConnectionError(
+                f"Invalid hostname in URL {url}: {err}"
+            ) from err
         except aiohttp.ClientResponseError as err:
             _LOGGER.error(
                 "HTTP error from ioBroker at %s: status=%s message=%s",
