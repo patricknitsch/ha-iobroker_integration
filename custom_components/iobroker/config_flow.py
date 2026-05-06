@@ -47,7 +47,13 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
 
             try:
                 reachable = await api.async_test_connection()
-            except IoBrokerConnectionError:
+            except IoBrokerConnectionError as err:
+                _LOGGER.error(
+                    "Connection to ioBroker at %s:%s failed: %s – check host/IP and port",
+                    host,
+                    port,
+                    err,
+                )
                 errors["base"] = "cannot_connect"
             except Exception:  # noqa: BLE001
                 _LOGGER.exception("Unexpected exception during ioBroker connection test")
