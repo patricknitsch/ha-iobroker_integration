@@ -31,5 +31,22 @@
     "abort": {
       "already_configured": "Diese ioBroker-Instanz ist bereits konfiguriert."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ioBroker – Datenkategorien",
+        "description": "Wähle aus, welche ioBroker-Datenkategorien als Home-Assistant-Entitäten importiert werden sollen.\n\n| Kategorie | ioBroker-Präfix | Verwendung |\n|---|---|---|\n| Systemdaten | `system.*` | Kern-Systemzustände von ioBroker |\n| Admin | `admin.*` | Admin-Adapter-Zustände |\n| Benutzerdaten | `0_userdata.*` | Benutzerdefinierte Zustände |\n| Geräte | *(alle anderen)* | Alle angebundenen Geräte-Adapter |\n| Discovery | `discovery.*` | Discovery-Adapter-Zustände |\n| Simple-API | `simple-api.*` | Simple-API-Adapter-Zustände |\n| Hass | `hass.*` | Hass-Adapter-Zustände |",
+        "data": {
+          "include_system": "Systemdaten (system.*)",
+          "include_admin": "Admin (admin.*)",
+          "include_userdata": "Benutzerdaten (0_userdata.*)",
+          "include_devices": "Geräte (alle anderen Adapter)",
+          "include_discovery": "Discovery (discovery.*)",
+          "include_simple_api": "Simple-API (simple-api.*)",
+          "include_hass": "Hass (hass.*)"
+        }
+      }
+    }
   }
 }

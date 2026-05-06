@@ -103,7 +103,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if obj.get("type") == IOBROKER_TYPE_STATE
     }
 
-    state_objects = _filter_by_categories(entry.data, state_objects)
+    # Options (set via the options flow) take precedence over initial data
+    merged_config = {**entry.data, **entry.options}
+    state_objects = _filter_by_categories(merged_config, state_objects)
 
     async def _async_update_data() -> dict[str, Any]:
         """Fetch current state values from ioBroker."""
@@ -134,7 +136,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(
         entry, [Platform(p) for p in PLATFORMS]
     )
+
+    entry.async_on_unload(entry.add_update_listener(_async_reload_on_options_update))
+
     return True
+
+
+async def _async_reload_on_options_update(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update – reload the config entry."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
