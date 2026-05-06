@@ -1,7 +1,6 @@
 """Binary sensor platform for ioBroker boolean read-only states."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -11,8 +10,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, IOBROKER_DATATYPE_BOOLEAN
 from .entity import IoBrokerEntity
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -34,7 +31,7 @@ async def async_setup_entry(
 
         # Binary sensor: boolean + explicitly NOT writable
         if datatype == IOBROKER_DATATYPE_BOOLEAN and not writable:
-            entities.append(IoBrokerBinarySensor(coordinator, obj_id, obj_meta))
+            entities.append(IoBrokerBinarySensor(coordinator, entry.entry_id, obj_id, obj_meta))
 
     async_add_entities(entities)
 

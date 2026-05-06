@@ -1,7 +1,6 @@
 """Switch platform for ioBroker writable boolean states."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
@@ -12,8 +11,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api import IoBrokerApi
 from .const import DOMAIN, IOBROKER_DATATYPE_BOOLEAN
 from .entity import IoBrokerEntity
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -35,7 +32,7 @@ async def async_setup_entry(
         writable = common.get("write", True)
 
         if datatype == IOBROKER_DATATYPE_BOOLEAN and writable:
-            entities.append(IoBrokerSwitch(coordinator, api, obj_id, obj_meta))
+            entities.append(IoBrokerSwitch(coordinator, api, entry.entry_id, obj_id, obj_meta))
 
     async_add_entities(entities)
 
@@ -47,11 +44,12 @@ class IoBrokerSwitch(IoBrokerEntity, SwitchEntity):
         self,
         coordinator: Any,
         api: IoBrokerApi,
+        entry_id: str,
         obj_id: str,
         obj_meta: dict[str, Any],
     ) -> None:
         """Initialise the switch."""
-        super().__init__(coordinator, obj_id, obj_meta)
+        super().__init__(coordinator, entry_id, obj_id, obj_meta)
         self._api = api
 
     @property

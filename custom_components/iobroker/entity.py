@@ -9,21 +9,23 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpda
 from .const import DOMAIN
 
 
-def _build_device_info(obj_id: str, obj_meta: dict[str, Any]) -> DeviceInfo:
+def _build_device_info(entry_id: str, obj_id: str) -> DeviceInfo:
     """Build a DeviceInfo from the ioBroker object hierarchy.
 
     ioBroker state IDs are structured as:
         adapter.instance.channel.state
-    We use the adapter + instance as the device identifier.
+    We use the adapter + instance as the device identifier, scoped to the
+    config entry so that multiple ioBroker instances never share a device.
     """
     parts = obj_id.split(".")
-    # Use first two segments (adapter.instance) as device id when possible
-    device_id = ".".join(parts[:2]) if len(parts) >= 2 else parts[0]
-    device_name = device_id
+    # Use first two segments (adapter.instance) as device label when possible
+    device_label = ".".join(parts[:2]) if len(parts) >= 2 else parts[0]
 
     return DeviceInfo(
-        identifiers={(DOMAIN, device_id)},
-        name=device_name,
+        # Scope the identifier to this config entry to avoid collisions
+        # between multiple ioBroker instances with the same adapter/instance name.
+        identifiers={(DOMAIN, f"{entry_id}_{device_label}")},
+        name=device_label,
         manufacturer="ioBroker",
     )
 
@@ -36,6 +38,7 @@ class IoBrokerEntity(CoordinatorEntity):
     def __init__(
         self,
         coordinator: DataUpdateCoordinator,
+        entry_id: str,
         obj_id: str,
         obj_meta: dict[str, Any],
     ) -> None:
@@ -45,12 +48,14 @@ class IoBrokerEntity(CoordinatorEntity):
         self._obj_meta = obj_meta
         common: dict[str, Any] = obj_meta.get("common", {})
 
-        self._attr_unique_id = f"{DOMAIN}_{obj_id}"
+        # Include entry_id so unique_ids are globally unique even when multiple
+        # ioBroker instances expose states with the same obj_id.
+        self._attr_unique_id = f"{DOMAIN}_{entry_id}_{obj_id}"
 
         raw_name = common.get("name", obj_id)
         self._attr_name = raw_name if isinstance(raw_name, str) else obj_id
 
-        self._attr_device_info = _build_device_info(obj_id, obj_meta)
+        self._attr_device_info = _build_device_info(entry_id, obj_id)
 
     @property
     def _state_data(self) -> dict[str, Any] | None:

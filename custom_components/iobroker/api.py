@@ -2,12 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from typing import Any
 
 import aiohttp
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class IoBrokerApiError(Exception):
@@ -110,9 +107,15 @@ class IoBrokerApi:
             ) from err
 
     async def async_test_connection(self) -> bool:
-        """Test the connection by hitting /help."""
+        """Test the connection by fetching a minimal states response.
+
+        The /states endpoint is guaranteed to return JSON (an object), making it
+        a safe connection probe. The /help endpoint returns plain text which would
+        cause a JSON decode error in _request().
+        """
         try:
-            await self._request("/help")
+            # Use a narrow pattern to minimise the response payload
+            await self._request("/states", {"pattern": "system.adapter.admin.0.alive"})
             return True
         except IoBrokerApiError:
             return False

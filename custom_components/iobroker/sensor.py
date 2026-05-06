@@ -1,7 +1,6 @@
 """Sensor platform for ioBroker read-only numeric and string states."""
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
@@ -17,8 +16,6 @@ from .const import (
     IOBROKER_DATATYPE_STRING,
 )
 from .entity import IoBrokerEntity
-
-_LOGGER = logging.getLogger(__name__)
 
 _READ_ONLY_TYPES = {IOBROKER_DATATYPE_NUMBER, IOBROKER_DATATYPE_STRING, IOBROKER_DATATYPE_MIXED}
 
@@ -41,7 +38,7 @@ async def async_setup_entry(
         writable = common.get("write", True)
 
         if datatype in _READ_ONLY_TYPES and not writable:
-            entities.append(IoBrokerSensor(coordinator, obj_id, obj_meta))
+            entities.append(IoBrokerSensor(coordinator, entry.entry_id, obj_id, obj_meta))
         elif datatype == IOBROKER_DATATYPE_BOOLEAN and not writable:
             # Booleans are handled by binary_sensor; skip here
             pass
@@ -49,7 +46,7 @@ async def async_setup_entry(
             # Writable numbers are handled by number platform; we still expose a sensor
             # for types that have no dedicated writable platform (string, mixed).
             if datatype != IOBROKER_DATATYPE_NUMBER:
-                entities.append(IoBrokerSensor(coordinator, obj_id, obj_meta))
+                entities.append(IoBrokerSensor(coordinator, entry.entry_id, obj_id, obj_meta))
 
     async_add_entities(entities)
 
@@ -57,9 +54,9 @@ async def async_setup_entry(
 class IoBrokerSensor(IoBrokerEntity, SensorEntity):
     """A sensor representing a numeric or string ioBroker state."""
 
-    def __init__(self, coordinator: Any, obj_id: str, obj_meta: dict[str, Any]) -> None:
+    def __init__(self, coordinator: Any, entry_id: str, obj_id: str, obj_meta: dict[str, Any]) -> None:
         """Initialise the sensor."""
-        super().__init__(coordinator, obj_id, obj_meta)
+        super().__init__(coordinator, entry_id, obj_id, obj_meta)
         common = obj_meta.get("common", {})
         datatype = common.get("type", "")
 
