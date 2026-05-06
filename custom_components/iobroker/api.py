@@ -41,7 +41,12 @@ class IoBrokerApi:
                 url, params=params, timeout=self._timeout
             ) as response:
                 response.raise_for_status()
-                return await response.json(content_type=None)
+                try:
+                    return await response.json(content_type=None)
+                except ValueError as err:
+                    raise IoBrokerApiError(
+                        f"Invalid JSON response from ioBroker at {url}"
+                    ) from err
         except aiohttp.ClientConnectionError as err:
             raise IoBrokerConnectionError(
                 f"Cannot connect to ioBroker at {url}: {err}"
