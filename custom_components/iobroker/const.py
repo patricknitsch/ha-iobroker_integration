@@ -9,6 +9,37 @@ DEFAULT_SCAN_INTERVAL = 30
 CONF_HOST = "host"
 CONF_PORT = "port"
 
+# Category filter config keys
+CONF_INCLUDE_SYSTEM = "include_system"
+CONF_INCLUDE_ADMIN = "include_admin"
+CONF_INCLUDE_USERDATA = "include_userdata"
+CONF_INCLUDE_DEVICES = "include_devices"
+CONF_INCLUDE_DISCOVERY = "include_discovery"
+CONF_INCLUDE_SIMPLE_API = "include_simple_api"
+CONF_INCLUDE_HASS = "include_hass"
+
+# ioBroker state-ID prefixes per category
+CATEGORY_PREFIXES: dict[str, tuple[str, ...]] = {
+    CONF_INCLUDE_SYSTEM: ("system.",),
+    CONF_INCLUDE_ADMIN: ("admin.",),
+    CONF_INCLUDE_USERDATA: ("0_userdata.",),
+    CONF_INCLUDE_DISCOVERY: ("discovery.",),
+    CONF_INCLUDE_SIMPLE_API: ("simple-api.",),
+    CONF_INCLUDE_HASS: ("hass.",),
+    # CONF_INCLUDE_DEVICES has no fixed prefix – it covers everything else
+}
+
+# Default values for each optional category
+CATEGORY_DEFAULTS: dict[str, bool] = {
+    CONF_INCLUDE_SYSTEM: True,
+    CONF_INCLUDE_ADMIN: False,
+    CONF_INCLUDE_USERDATA: True,
+    CONF_INCLUDE_DEVICES: True,
+    CONF_INCLUDE_DISCOVERY: False,
+    CONF_INCLUDE_SIMPLE_API: False,
+    CONF_INCLUDE_HASS: False,
+}
+
 # ioBroker object types
 IOBROKER_TYPE_STATE = "state"
 

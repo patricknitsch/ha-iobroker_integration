@@ -1,23 +1,35 @@
 # ha-iobroker_integration
 
-A Home Assistant custom integration that communicates with the [ioBroker HA App](https://github.com/klein0r/ha-app-iobroker) and automatically discovers all ioBroker states as Home Assistant entities.
+A Home Assistant custom integration that communicates with ioBroker and automatically discovers all selected ioBroker states as Home Assistant entities.
 
 ## Features
 
-- Auto-discovery of all ioBroker states via the **simple-api** adapter (REST, port 8087)
+- Auto-discovery of ioBroker states via the **simple-api** adapter (REST, port 8087)
 - Maps ioBroker data types to Home Assistant entity platforms:
   - **Writable boolean** → `switch`
   - **Read-only boolean** → `binary_sensor`
   - **Writable number** → `number` (with min/max/step/unit support)
   - **Read-only number / string / mixed** → `sensor`
 - UI-based configuration flow (Settings → Integrations → Add Integration → ioBroker)
+- Category selection: choose which ioBroker data groups to import
 - Polling-based state updates (default: every 30 s)
 - Device grouping by ioBroker adapter instance
 
 ## Prerequisites
 
-1. Install the [ioBroker HA App](https://github.com/klein0r/ha-app-iobroker) in Home Assistant
-2. Enable the **simple-api** adapter inside ioBroker (it listens on port **8087** by default)
+### 1. Install the simple-api adapter in ioBroker
+
+This integration communicates exclusively with the **ioBroker simple-api adapter** via HTTP/REST on port **8087** (default).
+
+> **Important:** Without the simple-api adapter the integration cannot connect.  
+> Port 8081 is the ioBroker *Admin* web UI — it is **not** used by this integration.
+
+Steps to install it:
+
+1. Open ioBroker → **Adapters**
+2. Search for **simple-api** and install it
+3. Start the adapter instance — it will listen on port **8087**
+4. Verify: open `http://<iobroker-host>:8087/states?pattern=system.adapter.admin.0.alive` in a browser; it should return JSON
 
 ## Installation
 
@@ -27,6 +39,7 @@ A Home Assistant custom integration that communicates with the [ioBroker HA App]
 2. Restart Home Assistant.
 3. Go to **Settings → Integrations → Add Integration** and search for **ioBroker**.
 4. Enter the hostname (default: `3a1c5d11-iobroker` when using the HA App) and port (default: `8087`).
+5. Select which data categories to import (see below).
 
 ### HACS (recommended)
 
@@ -34,10 +47,33 @@ Add this repository as a custom repository in HACS and install the **ioBroker** 
 
 ## Configuration
 
-| Field    | Default                | Description                           |
-|----------|------------------------|---------------------------------------|
-| Hostname | `3a1c5d11-iobroker`    | Hostname or IP of the ioBroker server |
-| Port     | `8087`                 | Port of the simple-api adapter        |
+### Step 1 – Connection
+
+| Field    | Default                | Description                                   |
+|----------|------------------------|-----------------------------------------------|
+| Hostname | `3a1c5d11-iobroker`    | Hostname or IP of the ioBroker server         |
+| Port     | `8087`                 | Port of the **simple-api adapter** (not 8081) |
+
+### Step 2 – Data categories
+
+Choose which ioBroker state categories should be imported as HA entities:
+
+| Toggle | ioBroker prefix | Default | Description |
+|---|---|---|---|
+| System data | `system.*` | ✅ on | Core ioBroker system states (uptime, memory, etc.) |
+| Admin | `admin.*` | ☐ off | Admin adapter states |
+| User data | `0_userdata.*` | ✅ on | Custom user-defined states |
+| Devices | *(all others)* | ✅ on | All connected device adapters (Homematic, Zigbee, …) |
+| Discovery | `discovery.*` | ☐ off | Discovery adapter states |
+| Simple-API | `simple-api.*` | ☐ off | Simple-API adapter internal states |
+| Hass | `hass.*` | ☐ off | Hass adapter states |
+
+## Port reference
+
+| Port | Service | Used by this integration |
+|------|---------|--------------------------|
+| 8081 | ioBroker Admin web UI | ❌ No |
+| 8087 | simple-api REST adapter | ✅ **Yes** |
 
 ## Entity mapping
 

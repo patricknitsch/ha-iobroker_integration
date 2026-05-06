@@ -2,16 +2,29 @@
   "config": {
     "step": {
       "user": {
-        "title": "ioBroker",
-        "description": "Verbindung zur ioBroker-Instanz herstellen (simple-api Adapter, Standardport 8087).",
+        "title": "ioBroker – Verbindung",
+        "description": "Verbindung zur ioBroker-Instanz herstellen.\n\n**Voraussetzung:** Der [simple-api Adapter](https://github.com/ioBroker/ioBroker.simple-api) muss in ioBroker installiert und gestartet sein (Adapter → simple-api). Er lauscht standardmäßig auf Port **8087**.",
         "data": {
           "host": "Hostname oder IP-Adresse",
-          "port": "Port"
+          "port": "Port (simple-api Adapter, Standard: 8087)"
+        }
+      },
+      "categories": {
+        "title": "ioBroker – Datenkategorien",
+        "description": "Wähle aus, welche ioBroker-Datenkategorien als Home-Assistant-Entitäten importiert werden sollen.\n\n| Kategorie | ioBroker-Präfix | Verwendung |\n|---|---|---|\n| Systemdaten | `system.*` | Kern-Systemzustände von ioBroker |\n| Admin | `admin.*` | Admin-Adapter-Zustände |\n| Benutzerdaten | `0_userdata.*` | Benutzerdefinierte Zustände |\n| Geräte | *(alle anderen)* | Alle angebundenen Geräte-Adapter |\n| Discovery | `discovery.*` | Discovery-Adapter-Zustände |\n| Simple-API | `simple-api.*` | Simple-API-Adapter-Zustände |\n| Hass | `hass.*` | Hass-Adapter-Zustände |",
+        "data": {
+          "include_system": "Systemdaten (system.*)",
+          "include_admin": "Admin (admin.*)",
+          "include_userdata": "Benutzerdaten (0_userdata.*)",
+          "include_devices": "Geräte (alle anderen Adapter)",
+          "include_discovery": "Discovery (discovery.*)",
+          "include_simple_api": "Simple-API (simple-api.*)",
+          "include_hass": "Hass (hass.*)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung fehlgeschlagen. Hostname/IP und Port prüfen.",
+      "cannot_connect": "Verbindung fehlgeschlagen. Hostname/IP und Port prüfen und sicherstellen, dass der **simple-api Adapter** in ioBroker installiert und gestartet ist (Adapter → simple-api, Standardport 8087).",
       "invalid_host": "Ungültiger Hostname. Auf aufeinanderfolgende Punkte oder führende/abschließende Punkte prüfen.",
       "unknown": "Unbekannter Fehler aufgetreten."
     },
