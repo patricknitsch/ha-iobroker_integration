@@ -31,5 +31,22 @@
     "abort": {
       "already_configured": "This ioBroker instance is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ioBroker – Data categories",
+        "description": "Select which ioBroker data categories should be imported as Home Assistant entities.\n\n| Category | ioBroker prefix | Typical use |\n|---|---|---|\n| System data | `system.*` | Core ioBroker system states |\n| Admin | `admin.*` | Admin adapter states |\n| User data | `0_userdata.*` | Custom user-defined states |\n| Devices | *(all others)* | All connected device adapters |\n| Discovery | `discovery.*` | Discovery adapter states |\n| Simple-API | `simple-api.*` | Simple-API adapter states |\n| Hass | `hass.*` | Hass adapter states |",
+        "data": {
+          "include_system": "System data (system.*)",
+          "include_admin": "Admin (admin.*)",
+          "include_userdata": "User data (0_userdata.*)",
+          "include_devices": "Devices (all other adapters)",
+          "include_discovery": "Discovery (discovery.*)",
+          "include_simple_api": "Simple-API (simple-api.*)",
+          "include_hass": "Hass (hass.*)"
+        }
+      }
+    }
   }
 }

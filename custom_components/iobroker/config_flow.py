@@ -5,7 +5,8 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import IoBrokerApi, IoBrokerConnectionError
@@ -69,6 +70,12 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for ioBroker."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> IoBrokerOptionsFlowHandler:
+        """Return the options flow handler."""
+        return IoBrokerOptionsFlowHandler(config_entry)
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -153,4 +160,40 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="categories",
             data_schema=_categories_schema(),
+        )
+
+
+class IoBrokerOptionsFlowHandler(OptionsFlow):
+    """Handle ioBroker options flow for reconfiguring data category visibility toggles."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the ioBroker options."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        # Use current options, fall back to values stored in entry.data
+        current = {**self.config_entry.data, **self.config_entry.options}
+
+        def _current(key: str) -> bool:
+            return current.get(key, CATEGORY_DEFAULTS[key])
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_INCLUDE_SYSTEM, default=_current(CONF_INCLUDE_SYSTEM)): bool,
+                    vol.Required(CONF_INCLUDE_ADMIN, default=_current(CONF_INCLUDE_ADMIN)): bool,
+                    vol.Required(CONF_INCLUDE_USERDATA, default=_current(CONF_INCLUDE_USERDATA)): bool,
+                    vol.Required(CONF_INCLUDE_DEVICES, default=_current(CONF_INCLUDE_DEVICES)): bool,
+                    vol.Required(CONF_INCLUDE_DISCOVERY, default=_current(CONF_INCLUDE_DISCOVERY)): bool,
+                    vol.Required(CONF_INCLUDE_SIMPLE_API, default=_current(CONF_INCLUDE_SIMPLE_API)): bool,
+                    vol.Required(CONF_INCLUDE_HASS, default=_current(CONF_INCLUDE_HASS)): bool,
+                }
+            ),
         )
