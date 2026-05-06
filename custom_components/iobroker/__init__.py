@@ -37,15 +37,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         connected = await api.async_test_connection()
     except IoBrokerConnectionError as err:
+        _LOGGER.error(
+            "Cannot connect to ioBroker at %s:%s – check host/IP and port: %s",
+            host,
+            port,
+            err,
+        )
         raise ConfigEntryNotReady(f"Cannot connect to ioBroker: {err}") from err
 
     if not connected:
+        _LOGGER.error(
+            "ioBroker at %s:%s is not reachable – check host/IP and port",
+            host,
+            port,
+        )
         raise ConfigEntryNotReady("ioBroker is not reachable")
 
     # Fetch objects once for metadata (roles, units, min/max, writable flag, etc.)
     try:
         objects: dict[str, Any] = await api.async_get_objects()
     except IoBrokerApiError as err:
+        _LOGGER.error("Failed to load ioBroker objects from %s:%s: %s", host, port, err)
         raise ConfigEntryNotReady(f"Failed to load ioBroker objects: {err}") from err
 
     # Keep only "state" type objects

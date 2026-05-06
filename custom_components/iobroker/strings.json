@@ -12,6 +12,7 @@
     },
     "error": {
       "cannot_connect": "Failed to connect. Verify the hostname/IP and port.",
+      "invalid_host": "Invalid hostname. Check for consecutive dots, leading or trailing dots.",
       "unknown": "Unexpected error occurred."
     },
     "abort": {

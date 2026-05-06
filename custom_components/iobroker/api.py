@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 import aiohttp
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class IoBrokerApiError(Exception):
@@ -33,26 +36,58 @@ class IoBrokerApi:
     async def _request(self, path: str, params: dict | None = None) -> Any:
         """Perform a GET request and return parsed JSON."""
         url = f"{self._base_url}{path}"
+        _LOGGER.debug("Sending GET request to %s (params=%s)", url, params)
         try:
             async with self._session.get(
                 url, params=params, timeout=self._timeout
             ) as response:
                 response.raise_for_status()
                 try:
-                    return await response.json(content_type=None)
+                    data = await response.json(content_type=None)
+                    _LOGGER.debug("Received response from %s (status=%s)", url, response.status)
+                    return data
                 except ValueError as err:
+                    _LOGGER.error(
+                        "Invalid JSON response from ioBroker at %s: %s", url, err
+                    )
                     raise IoBrokerApiError(
                         f"Invalid JSON response from ioBroker at {url}"
                     ) from err
         except aiohttp.ClientConnectionError as err:
+            _LOGGER.error(
+                "Cannot connect to ioBroker at %s – check host/IP and port: %s",
+                url,
+                err,
+            )
             raise IoBrokerConnectionError(
                 f"Cannot connect to ioBroker at {url}: {err}"
             ) from err
         except asyncio.TimeoutError as err:
+            _LOGGER.error(
+                "Timeout while connecting to ioBroker at %s – the host may be "
+                "unreachable or the port may be blocked",
+                url,
+            )
             raise IoBrokerConnectionError(
                 f"Timeout connecting to ioBroker at {url}"
             ) from err
+        except UnicodeEncodeError as err:
+            _LOGGER.error(
+                "Invalid hostname in ioBroker URL %s – check for consecutive dots, "
+                "leading or trailing dots: %s",
+                url,
+                err,
+            )
+            raise IoBrokerConnectionError(
+                f"Invalid hostname in URL {url}: {err}"
+            ) from err
         except aiohttp.ClientResponseError as err:
+            _LOGGER.error(
+                "HTTP error from ioBroker at %s: status=%s message=%s",
+                url,
+                err.status,
+                err.message,
+            )
             raise IoBrokerApiError(
                 f"Error response from ioBroker ({err.status}): {err.message}"
             ) from err
@@ -88,20 +123,37 @@ class IoBrokerApi:
         """Set a state value via the simple-api set endpoint."""
         url = f"{self._base_url}/set/{state_id}"
         params: dict[str, Any] = {"value": value}
+        _LOGGER.debug("Setting state %s to %r via %s", state_id, value, url)
         try:
             async with self._session.get(
                 url, params=params, timeout=self._timeout
             ) as response:
                 response.raise_for_status()
         except aiohttp.ClientConnectionError as err:
+            _LOGGER.error(
+                "Cannot connect to ioBroker at %s while setting state %s: %s",
+                url,
+                state_id,
+                err,
+            )
             raise IoBrokerConnectionError(
                 f"Cannot connect to ioBroker at {url}: {err}"
             ) from err
         except asyncio.TimeoutError as err:
+            _LOGGER.error(
+                "Timeout while setting state %s at %s", state_id, url
+            )
             raise IoBrokerConnectionError(
                 f"Timeout connecting to ioBroker at {url}"
             ) from err
         except aiohttp.ClientResponseError as err:
+            _LOGGER.error(
+                "HTTP error from ioBroker at %s while setting state %s: status=%s message=%s",
+                url,
+                state_id,
+                err.status,
+                err.message,
+            )
             raise IoBrokerApiError(
                 f"Error response from ioBroker ({err.status}): {err.message}"
             ) from err
@@ -113,9 +165,14 @@ class IoBrokerApi:
         a safe connection probe. The /help endpoint returns plain text which would
         cause a JSON decode error in _request().
         """
+        _LOGGER.debug("Testing connection to ioBroker at %s", self._base_url)
         try:
             # Use a narrow pattern to minimise the response payload
             await self._request("/states", {"pattern": "system.adapter.admin.0.alive"})
+            _LOGGER.info("Successfully connected to ioBroker at %s", self._base_url)
             return True
-        except IoBrokerApiError:
+        except IoBrokerApiError as err:
+            _LOGGER.warning(
+                "Connection test to ioBroker at %s failed: %s", self._base_url, err
+            )
             return False
