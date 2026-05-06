@@ -9,7 +9,21 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import IoBrokerApi, IoBrokerConnectionError
-from .const import CONF_HOST, CONF_PORT, DEFAULT_HOST, DEFAULT_PORT, DOMAIN
+from .const import (
+    CATEGORY_DEFAULTS,
+    CONF_HOST,
+    CONF_INCLUDE_ADMIN,
+    CONF_INCLUDE_DEVICES,
+    CONF_INCLUDE_DISCOVERY,
+    CONF_INCLUDE_HASS,
+    CONF_INCLUDE_SIMPLE_API,
+    CONF_INCLUDE_SYSTEM,
+    CONF_INCLUDE_USERDATA,
+    CONF_PORT,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,15 +37,48 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
+def _categories_schema() -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_INCLUDE_SYSTEM, default=CATEGORY_DEFAULTS[CONF_INCLUDE_SYSTEM]
+            ): bool,
+            vol.Required(
+                CONF_INCLUDE_ADMIN, default=CATEGORY_DEFAULTS[CONF_INCLUDE_ADMIN]
+            ): bool,
+            vol.Required(
+                CONF_INCLUDE_USERDATA, default=CATEGORY_DEFAULTS[CONF_INCLUDE_USERDATA]
+            ): bool,
+            vol.Required(
+                CONF_INCLUDE_DEVICES, default=CATEGORY_DEFAULTS[CONF_INCLUDE_DEVICES]
+            ): bool,
+            vol.Required(
+                CONF_INCLUDE_DISCOVERY, default=CATEGORY_DEFAULTS[CONF_INCLUDE_DISCOVERY]
+            ): bool,
+            vol.Required(
+                CONF_INCLUDE_SIMPLE_API, default=CATEGORY_DEFAULTS[CONF_INCLUDE_SIMPLE_API]
+            ): bool,
+            vol.Required(
+                CONF_INCLUDE_HASS, default=CATEGORY_DEFAULTS[CONF_INCLUDE_HASS]
+            ): bool,
+        }
+    )
+
+
 class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for ioBroker."""
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        """Initialize the config flow."""
+        self._host: str = ""
+        self._port: int = DEFAULT_PORT
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step."""
+        """Handle the initial step (host + port)."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -57,7 +104,9 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
                 reachable = await api.async_test_connection()
             except IoBrokerConnectionError as err:
                 _LOGGER.error(
-                    "Connection to ioBroker at %s:%s failed: %s – check host/IP and port",
+                    "Connection to ioBroker at %s:%s failed: %s – "
+                    "Make sure the simple-api adapter is installed and running in ioBroker "
+                    "(Adapters → simple-api, default port 8087)",
                     host,
                     port,
                     err,
@@ -68,15 +117,40 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 if not reachable:
+                    _LOGGER.error(
+                        "ioBroker at %s:%s did not respond – "
+                        "Make sure the simple-api adapter is installed and running "
+                        "(Adapters → simple-api, default port 8087)",
+                        host,
+                        port,
+                    )
                     errors["base"] = "cannot_connect"
                 else:
-                    return self.async_create_entry(
-                        title=f"ioBroker ({host}:{port})",
-                        data={**user_input, CONF_HOST: host},
-                    )
+                    self._host = host
+                    self._port = port
+                    return await self.async_step_categories()
 
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
+        )
+
+    async def async_step_categories(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the category selection step."""
+        if user_input is not None:
+            return self.async_create_entry(
+                title=f"ioBroker ({self._host}:{self._port})",
+                data={
+                    CONF_HOST: self._host,
+                    CONF_PORT: self._port,
+                    **user_input,
+                },
+            )
+
+        return self.async_show_form(
+            step_id="categories",
+            data_schema=_categories_schema(),
         )

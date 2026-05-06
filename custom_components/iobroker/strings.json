@@ -2,16 +2,29 @@
   "config": {
     "step": {
       "user": {
-        "title": "ioBroker",
-        "description": "Connect to your ioBroker instance (simple-api adapter, default port 8087).",
+        "title": "ioBroker – Connection",
+        "description": "Connect to your ioBroker instance.\n\n**Required:** The [simple-api adapter](https://github.com/ioBroker/ioBroker.simple-api) must be installed and running inside ioBroker (Adapters → simple-api). It listens on port **8087** by default.",
         "data": {
           "host": "Hostname or IP address",
-          "port": "Port"
+          "port": "Port (simple-api adapter, default: 8087)"
+        }
+      },
+      "categories": {
+        "title": "ioBroker – Data categories",
+        "description": "Select which ioBroker data categories should be imported as Home Assistant entities.\n\n| Category | ioBroker prefix | Typical use |\n|---|---|---|\n| System data | `system.*` | Core ioBroker system states |\n| Admin | `admin.*` | Admin adapter states |\n| User data | `0_userdata.*` | Custom user-defined states |\n| Devices | *(all others)* | All connected device adapters |\n| Discovery | `discovery.*` | Discovery adapter states |\n| Simple-API | `simple-api.*` | Simple-API adapter states |\n| Hass | `hass.*` | Hass adapter states |",
+        "data": {
+          "include_system": "System data (system.*)",
+          "include_admin": "Admin (admin.*)",
+          "include_userdata": "User data (0_userdata.*)",
+          "include_devices": "Devices (all other adapters)",
+          "include_discovery": "Discovery (discovery.*)",
+          "include_simple_api": "Simple-API (simple-api.*)",
+          "include_hass": "Hass (hass.*)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect. Verify the hostname/IP and port.",
+      "cannot_connect": "Failed to connect. Verify the hostname/IP and port, and make sure the **simple-api adapter** is installed and running in ioBroker (Adapters → simple-api, default port 8087).",
       "invalid_host": "Invalid hostname. Check for consecutive dots, leading or trailing dots.",
       "unknown": "Unexpected error occurred."
     },

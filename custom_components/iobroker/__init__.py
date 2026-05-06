@@ -14,7 +14,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import IoBrokerApi, IoBrokerApiError, IoBrokerConnectionError
 from .const import (
+    CATEGORY_DEFAULTS,
+    CATEGORY_PREFIXES,
     CONF_HOST,
+    CONF_INCLUDE_DEVICES,
     CONF_PORT,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -23,6 +26,39 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _filter_by_categories(
+    config: dict[str, Any], state_objects: dict[str, Any]
+) -> dict[str, Any]:
+    """Return only the state objects that belong to enabled categories.
+
+    Categories map to ioBroker state-ID prefixes (e.g. ``system.`` for the
+    *system* category).  The special *devices* category covers every state that
+    does not match any of the known prefixes.
+    """
+    result: dict[str, Any] = {}
+    for obj_id, obj in state_objects.items():
+        matched_category: str | None = None
+        for conf_key, prefixes in CATEGORY_PREFIXES.items():
+            if any(obj_id.startswith(p) for p in prefixes):
+                matched_category = conf_key
+                break
+
+        if matched_category is None:
+            # Falls into the "devices" bucket
+            enabled = config.get(
+                CONF_INCLUDE_DEVICES, CATEGORY_DEFAULTS[CONF_INCLUDE_DEVICES]
+            )
+        else:
+            enabled = config.get(
+                matched_category, CATEGORY_DEFAULTS[matched_category]
+            )
+
+        if enabled:
+            result[obj_id] = obj
+
+    return result
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -60,12 +96,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Failed to load ioBroker objects from %s:%s: %s", host, port, err)
         raise ConfigEntryNotReady(f"Failed to load ioBroker objects: {err}") from err
 
-    # Keep only "state" type objects
+    # Keep only "state" type objects, then filter by selected categories
     state_objects: dict[str, Any] = {
         obj_id: obj
         for obj_id, obj in objects.items()
         if obj.get("type") == IOBROKER_TYPE_STATE
     }
+
+    state_objects = _filter_by_categories(entry.data, state_objects)
 
     async def _async_update_data() -> dict[str, Any]:
         """Fetch current state values from ioBroker."""
