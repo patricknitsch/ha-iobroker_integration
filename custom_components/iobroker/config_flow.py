@@ -75,7 +75,7 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> IoBrokerOptionsFlowHandler:
         """Return the options flow handler."""
-        return IoBrokerOptionsFlowHandler(config_entry)
+        return IoBrokerOptionsFlowHandler()
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -165,10 +165,6 @@ class IoBrokerConfigFlow(ConfigFlow, domain=DOMAIN):
 
 class IoBrokerOptionsFlowHandler(OptionsFlow):
     """Handle ioBroker options flow for reconfiguring data category visibility toggles."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
